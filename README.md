@@ -8,7 +8,7 @@
 
 ## Git clone 
 ```
-git clone -b kinetic-devel https://github.com/ros-planning/moveit_tutorials.git
+git clone -b kinetic-devel https://github.com/NSCL/moveit_tutorials.git
 ```
 
 ## Move Group C++ Interface
