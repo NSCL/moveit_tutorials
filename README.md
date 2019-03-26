@@ -11,6 +11,22 @@
 git clone -b kinetic-devel https://github.com/ros-planning/moveit_tutorials.git
 ```
 
+## Move Group C++ Interface
+Open two shells. In the first shell start RViz and wait for everything to finish loading(In NSCL/UR5 case):
+
+```
+roslaunch ur_gazebo ur5.launch
+roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch sim:=true
+
+roslaunch ur5_moveit_config moveit_rviz.launch config:=true
+```
+
+In the second shell, run the launch file:
+```
+roslaunch moveit_tutorials move_group_interface_tutorial.launch
+```
+
+
 
 ### Directory Structure
 
