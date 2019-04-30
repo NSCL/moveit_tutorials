@@ -59,7 +59,7 @@ void help()
   ROS_INFO("RVIZ SETUP");
   ROS_INFO("----------");
   ROS_INFO("  Global options:");
-  ROS_INFO("    FixedFrame = /panda_link0");
+  ROS_INFO("    FixedFrame = /base_link");
   ROS_INFO("  Add a RobotState display:");
   ROS_INFO("    RobotDescription = robot_description");
   ROS_INFO("    RobotStateTopic  = interactive_robot_state");
@@ -141,7 +141,7 @@ void computeCollisionContactPoints(InteractiveRobot& robot)
       visualization_msgs::MarkerArray markers;
 
       /* Get the contact ponts and display them as markers */
-      collision_detection::getCollisionMarkersFromContacts(markers, "panda_link0", c_res.contacts, color,
+      collision_detection::getCollisionMarkersFromContacts(markers, "base_link", c_res.contacts, color,
                                                            ros::Duration(),  // remain until deleted
                                                            0.01);            // radius
       publishMarkers(markers);

@@ -1,0 +1,17 @@
+<launch>
+
+  <!-- load URDF -->
+
+  <!-- load SRDF -->
+
+  <!-- Run RViz with a custom config -->
+
+  <!-- If needed, broadcast static tf2 for robot root -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 1 /world/base_link /base_link 10" />
+
+  <!-- launch interactivity_tutorial -->
+  <node name="visualizing_collisions_tutorial" pkg="moveit_tutorials" type="visualizing_collisions_tutorial" respawn="false" output="screen">
+    <rosparam command="load" file="$(find total_moveit_config)/config/kinematics.yaml"/>
+  </node>
+
+</launch>

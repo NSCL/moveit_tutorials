@@ -52,7 +52,7 @@ const ros::Duration InteractiveRobot::min_delay_(0.01);
 
 InteractiveRobot::InteractiveRobot(const std::string& robot_description, const std::string& robot_topic,
                                    const std::string& marker_topic, const std::string& imarker_topic)
-  :  // this node handle is used to create the publishers
+  :  // this node eefle is used to create the publishers
   nh_()
   ,
   // create publishers for markers and robot state
@@ -87,18 +87,18 @@ InteractiveRobot::InteractiveRobot(const std::string& robot_description, const s
   }
   robot_state_->setToDefaultValues();
 
-  // Prepare to move the "panda_arm" group
-  group_ = robot_state_->getJointModelGroup("panda_arm");
+  // Prepare to move the "manipulator" group
+  group_ = robot_state_->getJointModelGroup("manipulator");
   std::string end_link = group_->getLinkModelNames().back();
   desired_group_end_link_pose_ = robot_state_->getGlobalLinkTransform(end_link);
 
-  // Create a marker to control the "panda_arm" group
-  imarker_robot_ = new IMarker(interactive_marker_server_, "robot", desired_group_end_link_pose_, "/panda_link0",
+  // Create a marker to control the "manipulator" group
+  imarker_robot_ = new IMarker(interactive_marker_server_, "robot", desired_group_end_link_pose_, "/base_link",
                                boost::bind(movedRobotMarkerCallback, this, _1), IMarker::BOTH),
 
   // create an interactive marker to control the world geometry (the yellow cube)
       desired_world_object_pose_ = DEFAULT_WORLD_OBJECT_POSE_;
-  imarker_world_ = new IMarker(interactive_marker_server_, "world", desired_world_object_pose_, "/panda_link0",
+  imarker_world_ = new IMarker(interactive_marker_server_, "world", desired_world_object_pose_, "/base_link",
                                boost::bind(movedWorldMarkerCallback, this, _1), IMarker::POS),
 
   // start publishing timer.
@@ -118,7 +118,7 @@ InteractiveRobot::~InteractiveRobot()
   delete imarker_robot_;
 }
 
-// callback called when marker moves.  Moves right hand to new marker pose.
+// callback called when marker moves.  Moves right eef to new marker pose.
 void InteractiveRobot::movedRobotMarkerCallback(InteractiveRobot* robot,
                                                 const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback)
 {
@@ -292,7 +292,7 @@ void InteractiveRobot::setWorldObjectPose(const Eigen::Affine3d& pose)
 void InteractiveRobot::publishWorldState()
 {
   visualization_msgs::Marker marker;
-  marker.header.frame_id = "/panda_link0";
+  marker.header.frame_id = "/base_link";
   marker.header.stamp = ros::Time::now();
   marker.ns = "world_box";
   marker.id = 0;

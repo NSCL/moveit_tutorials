@@ -46,7 +46,7 @@ void help()
   ROS_INFO("RVIZ SETUP");
   ROS_INFO("----------");
   ROS_INFO("  Global options:");
-  ROS_INFO("    FixedFrame = /panda_link0");
+  ROS_INFO("    FixedFrame = /base_link");
   ROS_INFO("  Add a RobotState display:");
   ROS_INFO("    RobotDescription = robot_description");
   ROS_INFO("    RobotStateTopic  = interactive_robot_state");
@@ -65,7 +65,7 @@ void userCallback(InteractiveRobot& robot)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "interactivity_tutorial");
-  ros::NodeHandle nh;
+  ros::Nodeeefle nh;
 
   InteractiveRobot robot;
 
