@@ -60,7 +60,7 @@ int main(int argc, char** argv)
   // MoveIt! operates on sets of joints called "planning groups" and stores them in an object called
   // the `JointModelGroup`. Throughout MoveIt! the terms "planning group" and "joint model group"
   // are used interchangably.
-  static const std::string PLANNING_GROUP = "panda_arm";
+  static const std::string PLANNING_GROUP = "manipulator";
 
   // The :move_group_interface:`MoveGroup` class can be easily
   // setup using just the name of the planning group you would like to control and plan for.
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
   // The package MoveItVisualTools provides many capabilties for visualizing objects, robots,
   // and trajectories in RViz as well as debugging tools such as step-by-step introspection of a script
   namespace rvt = rviz_visual_tools;
-  moveit_visual_tools::MoveItVisualTools visual_tools("panda_link0");
+  moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
   visual_tools.deleteAllMarkers();
 
   // Remote control is an introspection tool that allows users to step through a high level script
@@ -114,9 +114,9 @@ int main(int argc, char** argv)
   // end-effector.
   geometry_msgs::Pose target_pose1;
   target_pose1.orientation.w = 1.0;
-  target_pose1.position.x = 0.28;
-  target_pose1.position.y = -0.2;
-  target_pose1.position.z = 0.5;
+  target_pose1.position.x = 0.20;
+  target_pose1.position.y = -0.4;
+  target_pose1.position.z = 0.3;
   move_group.setPoseTarget(target_pose1);
 
   // Now, we call the planner to compute the plan and visualize it.
@@ -167,7 +167,9 @@ int main(int argc, char** argv)
   current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
 
   // Now, let's modify one of the joints, plan to the new joint space goal and visualize the plan.
-  joint_group_positions[0] = -1.0;  // radians
+  joint_group_positions[0] = -0.2;  // radians
+  joint_group_positions[4] = -0.2;  // radians
+  joint_group_positions[5] = -0.2;  // radians
   move_group.setJointValueTarget(joint_group_positions);
 
   success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
@@ -187,8 +189,8 @@ int main(int argc, char** argv)
   // Let's specify a path constraint and a pose goal for our group.
   // First define the path constraint.
   moveit_msgs::OrientationConstraint ocm;
-  ocm.link_name = "panda_link7";
-  ocm.header.frame_id = "panda_link0";
+  ocm.link_name = "tool0";
+  ocm.header.frame_id = "base_link";
   ocm.orientation.w = 1.0;
   ocm.absolute_x_axis_tolerance = 0.1;
   ocm.absolute_y_axis_tolerance = 0.1;
@@ -209,7 +211,7 @@ int main(int argc, char** argv)
   start_pose2.orientation.w = 1.0;
   start_pose2.position.x = 0.55;
   start_pose2.position.y = -0.05;
-  start_pose2.position.z = 0.8;
+  start_pose2.position.z = 0.5;
   start_state.setFromIK(joint_model_group, start_pose2);
   move_group.setStartState(start_state);
 
@@ -250,7 +252,7 @@ int main(int argc, char** argv)
   std::vector<geometry_msgs::Pose> waypoints;
   waypoints.push_back(target_pose3);
 
-  target_pose3.position.z -= 0.2;
+  target_pose3.position.z += 0.2;
   waypoints.push_back(target_pose3);  // down
 
   target_pose3.position.y -= 0.2;
@@ -309,7 +311,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.4;
   box_pose.position.y = -0.2;
-  box_pose.position.z = 1.0;
+  box_pose.position.z = 0.50;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -335,7 +337,7 @@ int main(int argc, char** argv)
   another_pose.orientation.w = 1.0;
   another_pose.position.x = 0.4;
   another_pose.position.y = -0.4;
-  another_pose.position.z = 0.9;
+  another_pose.position.z = 0.4;
   move_group.setPoseTarget(another_pose);
 
   success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
