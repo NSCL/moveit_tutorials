@@ -34,8 +34,14 @@
 
 /* Author: Sachin Chitta, Dave Coleman, Mike Lautman */
 
+// ROS
+#include <ros/ros.h>
+
+// MoveIt!
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
+#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
+#include <geometric_shapes/solid_primitive_dims.h>
 
 #include <moveit_msgs/DisplayRobotState.h>
 #include <moveit_msgs/DisplayTrajectory.h>
@@ -44,6 +50,120 @@
 #include <moveit_msgs/CollisionObject.h>
 
 #include <moveit_visual_tools/moveit_visual_tools.h>
+
+// TF2
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+//c++
+#include <string>
+#include <iostream>
+
+void addWorktop(std::string collision_id)
+{
+  moveit_msgs::CollisionObject collision_object;
+  collision_object.header.frame_id = collision_id;
+
+  // The id of the object is used to identify it.
+  collision_object.id = "worktop";
+
+  // Define a box to add to the world.
+  shape_msgs::SolidPrimitive primitive;
+  primitive.type = primitive.BOX;
+  primitive.dimensions.resize(3);
+  primitive.dimensions[0] = 1.5;
+  primitive.dimensions[1] = 1.5;
+  primitive.dimensions[2] = 1;
+
+  // Define a pose for the box (specified relative to frame_id)
+  geometry_msgs::Pose box_pose;
+  box_pose.orientation.w = 1.0;
+  box_pose.position.x = 0.0;
+  box_pose.position.y = -0.0;
+  box_pose.position.z = -0.55;
+
+  collision_object.primitives.push_back(primitive);
+  collision_object.primitive_poses.push_back(box_pose);
+  collision_object.operation = collision_object.ADD;
+
+  std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.push_back(collision_object);
+}
+void addCollisionObjects()
+{
+  ros::NodeHandle nh;
+
+  ros::Publisher pub_co = nh.advertise<moveit_msgs::CollisionObject>("collision_object", 10);
+  ros::Publisher pub_aco = nh.advertise<moveit_msgs::AttachedCollisionObject>("attached_collision_object", 10);
+  ros::WallDuration(1.0).sleep();
+  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+  moveit::planning_interface::MoveGroupInterface group("manipulator");
+  group.setPlanningTime(45.0);
+
+  //addCollisionObjects(planning_scene_interface);
+  moveit_msgs::CollisionObject co;
+  co.header.stamp = ros::Time::now();
+  co.header.frame_id = "base_link";
+
+  // remove pole
+  co.id = "table1";
+  co.operation = moveit_msgs::CollisionObject::REMOVE;
+  pub_co.publish(co);
+
+  // add pole
+  co.operation = moveit_msgs::CollisionObject::ADD;
+  co.primitives.resize(1);
+  co.primitives[0].type = shape_msgs::SolidPrimitive::BOX;
+  co.primitives[0].dimensions.resize(geometric_shapes::SolidPrimitiveDimCount<shape_msgs::SolidPrimitive::BOX>::value);
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = 0.2;
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = 0.4;
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.4;
+  co.primitive_poses.resize(1);
+  co.primitive_poses[0].position.x = 0.5;
+  co.primitive_poses[0].position.y = 0;
+  co.primitive_poses[0].position.z = 0.2;
+  pub_co.publish(co);
+
+
+
+  // remove table
+  co.id = "table2";
+  co.operation = moveit_msgs::CollisionObject::REMOVE;
+  pub_co.publish(co);
+
+  // add table
+  co.operation = moveit_msgs::CollisionObject::ADD;
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = 0.5;
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = 0.2;
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.4;
+  co.primitive_poses[0].position.x = 0;
+  co.primitive_poses[0].position.y = 0.5;
+  co.primitive_poses[0].position.z = 0.2;
+  pub_co.publish(co);
+
+
+
+  co.id = "object";
+  co.operation = moveit_msgs::CollisionObject::REMOVE;
+  pub_co.publish(co);
+  
+  moveit_msgs::AttachedCollisionObject aco;
+  aco.object = co;
+  pub_aco.publish(aco);
+  
+  co.operation = moveit_msgs::CollisionObject::ADD;
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = 0.02;
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = 0.02;
+  co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.2;
+
+  co.primitive_poses[0].position.x = 0.5;
+  co.primitive_poses[0].position.y = 0;
+  co.primitive_poses[0].position.z = 0.5;
+  pub_co.publish(co);
+  // Wait a bit for ROS things to initialize
+  ros::WallDuration(1.0).sleep();
+
+
+}
 
 int main(int argc, char** argv)
 {
@@ -108,33 +228,8 @@ int main(int argc, char** argv)
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
-  moveit_msgs::CollisionObject collision_object;
-  collision_object.header.frame_id = move_group.getPlanningFrame();
-
-  // The id of the object is used to identify it.
-  collision_object.id = "ground";
-
-  // Define a box to add to the world.
-  shape_msgs::SolidPrimitive primitive;
-  primitive.type = primitive.BOX;
-  primitive.dimensions.resize(3);
-  primitive.dimensions[0] = 3;
-  primitive.dimensions[1] = 3;
-  primitive.dimensions[2] = 1;
-
-  // Define a pose for the box (specified relative to frame_id)
-  geometry_msgs::Pose box_pose;
-  box_pose.orientation.w = 1.0;
-  box_pose.position.x = 0.0;
-  box_pose.position.y = -0.0;
-  box_pose.position.z = -0.55;
-
-  collision_object.primitives.push_back(primitive);
-  collision_object.primitive_poses.push_back(box_pose);
-  collision_object.operation = collision_object.ADD;
-
-  std::vector<moveit_msgs::CollisionObject> collision_objects;
-  collision_objects.push_back(collision_object);
+  addWorktop(move_group.getPlanningFrame());
+  addCollisionObjects();
 
 
   // Planning to a Pose goal
@@ -321,7 +416,7 @@ int main(int argc, char** argv)
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   //
   // Define a collision object ROS message.
-  /*
+  
   moveit_msgs::CollisionObject collision_object;
   collision_object.header.frame_id = move_group.getPlanningFrame();
 
@@ -349,7 +444,7 @@ int main(int argc, char** argv)
 
   std::vector<moveit_msgs::CollisionObject> collision_objects;
   collision_objects.push_back(collision_object);
-  */
+  
   // Now, let's add the collision object into the world
   ROS_INFO_NAMED("tutorial", "Add an object into the world");
   planning_scene_interface.addCollisionObjects(collision_objects);
